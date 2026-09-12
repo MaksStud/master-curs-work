@@ -8,7 +8,16 @@ class _Settings(BaseSettings):
     port: int = 8000
     debug: bool = False
 
+    db_protocol: str = ''
+    db_host: str = ''
+    db_port: str = ''
+    db_user: str = ''
+    db_password: str = ''
+    db_name: str = ''
 
+    @property
+    def db_url(self) -> str:
+        return f"{self.db_protocol}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
 
 settings = _Settings()
