@@ -21,7 +21,6 @@ def create_token_pair(user_id: str) -> dict[str, str]:
     }
 
 def decode_token(token: str, expected_type: str) -> dict[str, Any] | None:
-    
     try:
         payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
         if payload.get("type") != expected_type:
@@ -29,7 +28,6 @@ def decode_token(token: str, expected_type: str) -> dict[str, Any] | None:
         return payload
     except InvalidTokenError:
         return None
-
 
 def _create_access_token(user_id: str):
     return _create_jwt_token(

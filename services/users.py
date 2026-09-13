@@ -42,6 +42,9 @@ async def get_user_by_field(
 
     :retun: User or None
     """
+    if search_value is None:
+        return None
+
     query = select(UsersModel).where(filter_field == search_value)
     return await session.scalar(query)
 
