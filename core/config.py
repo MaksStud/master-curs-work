@@ -19,5 +19,9 @@ class _Settings(BaseSettings):
     def db_url(self) -> str:
         return f"{self.db_protocol}://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
+    jwt_secret_key: str = ""
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 7
 
 settings = _Settings()

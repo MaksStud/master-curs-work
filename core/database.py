@@ -8,13 +8,14 @@ from core.config import settings
 
 
 engine = create_async_engine(settings.db_url)
-session = async_sessionmaker(engine)
+session = async_sessionmaker(engine, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
     ...
 
 async def get_db():
+    """Get database."""
     async with session() as db:
         yield db
 
