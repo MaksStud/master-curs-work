@@ -15,7 +15,15 @@ security = HTTPBearer()
 Credentials = Annotated[HTTPAuthorizationCredentials, Depends(security)]
 
 async def _get_current_user(credentials: Credentials, session: SessionDep ) -> UsersModel:
-    """Get authenticated user from token and database."""
+    """Get authenticated user from token and database.
+
+    :param credentials: Bearer token credentials extracted from the request.
+    :param session: Database session.
+
+    :return: Authenticated user.
+
+    :raises HTTPException: If the token is invalid or the user does not exist.
+    """
     payload = decode_token(credentials.credentials, expected_type="access")
 
     if payload is None:
