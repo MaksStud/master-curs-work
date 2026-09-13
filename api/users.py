@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from core.database import SessionDep
 from core.constantes import EMAIL_OR_PASSWORD_IS_NOT_VALID, USER_ALREDY_EXIST
+from core.security import CurrentUser
 
 from models.users import UsersModel
 
@@ -64,3 +65,6 @@ async def login(user: RegisterLoginUserSchema, session: SessionDep) -> JWTTokens
     return jwt_tokens
 
     
+@router.get('/profile')
+def get_user_profile(user: CurrentUser) -> ReadProfileUserSchema:
+    return user
