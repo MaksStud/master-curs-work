@@ -24,4 +24,13 @@ class _Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
 
+    redis_protocol: str = "redis"
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+
+    @property
+    def redis_url(self) -> str:
+        return f"{self.redis_protocol}://{self.redis_host}:{self.redis_port}/{self.redis_db}"
+
 settings = _Settings()

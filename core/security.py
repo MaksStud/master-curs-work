@@ -14,7 +14,7 @@ from services.users import get_user_by_id
 security = HTTPBearer()
 Credentials = Annotated[HTTPAuthorizationCredentials, Depends(security)]
 
-async def _get_current_user(credentials: Credentials, session: SessionDep ) -> UsersModel:
+async def _get_current_user(credentials: Credentials, session: SessionDep) -> UsersModel:
     """Get authenticated user from token and database.
 
     :param credentials: Bearer token credentials extracted from the request.
