@@ -5,6 +5,7 @@ class _Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env')
 
     project_name: str = 'Test'
+    host: str = 'localhost'
     port: int = 8000
     debug: bool = False
 

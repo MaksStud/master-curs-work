@@ -23,12 +23,13 @@ app.include_router(router)
 @app.get('/')
 def redirect_to_docs() -> RedirectResponse:
     """Redirect user from main page to documentation."""
-    return RedirectResponse(DOCUMENTATION_PAGE, status_code=status.HTTP_200_OK)
+    return RedirectResponse(DOCUMENTATION_PAGE, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 
 if __name__ == '__main__':
     uvicorn.run(
-        'main:app', 
-        reload=settings.debug, 
-        port=settings.port
+        'main:app',
+        host=settings.host,
+        port=settings.port,
+        reload=settings.debug,
         )
