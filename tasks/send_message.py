@@ -1,8 +1,9 @@
+import asyncio
 from typing import Any, List
 
 from core.celery import celery_app
 from services.notifications.registry import NotificationRegistry
-
+from services.notifications.notification_abstract import NotificationAbstract
 
 @celery_app.task
 def send_massage(service_name: str, recipients: List[str], content: Any, subject: str | None):
@@ -14,10 +15,9 @@ def send_massage(service_name: str, recipients: List[str], content: Any, subject
     :content: What will be in the message.
     :subject: Subject of the message.
     """
-    service = NotificationRegistry.get(service_name)(
+    service: NotificationAbstract = NotificationRegistry.get(service_name)(
         recipients=recipients,
         content=content,
         subject=subject
     )
-    service.send()
-
+    asyncio.run(service.send())

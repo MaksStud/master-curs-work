@@ -1,4 +1,7 @@
 import random
+from typing import Annotated
+
+from fastapi import Depends
 
 from core.redis import RedisDep
 from core.config import settings
@@ -15,7 +18,7 @@ class OTPCodeService:
         """Generates an OTP code."""
         return random.randint(1000, 9999)
 
-    async def set_code(self, user_identifier: str, code: str) -> int:
+    async def set_code(self, user_identifier: str, code: int) -> int:
         """
         Set otp code for user.
 
@@ -40,3 +43,6 @@ class OTPCodeService:
         key = USER_OTP_REDIS_KEY.format(user_identifier=user_identifier)
         code = await self._redis.get(key)
         return int(code) if code is not None else None
+
+
+OTPCodeDep = Annotated[OTPCodeService, Depends()]

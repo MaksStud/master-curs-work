@@ -17,6 +17,6 @@ class NotificationAbstract(ABC):
         self.subject: str | None = subject
 
     @abstractmethod
-    def send(self) -> None:
+    async def send(self) -> None:
         """A method that must be overridden by every class that inherits from it."""
         raise NotImplementedError("It must be іmplemented in the sub class.")

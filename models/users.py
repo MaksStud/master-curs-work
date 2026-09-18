@@ -13,3 +13,4 @@ class UsersModel(Base):
     )    
     email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
+    is_active: Mapped[bool] = mapped_column(default=False)

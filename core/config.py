@@ -43,4 +43,6 @@ class _Settings(BaseSettings):
     use_credentials: bool = True,
     validate_certs: bool = True
 
+    otp_live_time_second: int = 600
+
 settings = _Settings()
