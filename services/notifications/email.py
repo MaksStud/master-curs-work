@@ -1,7 +1,8 @@
 from fastapi_mail import MessageSchema
 
-from notification_abstract import NotificationAbstract
 from core.email import mail_app
+
+from services.notifications.notification_abstract import NotificationAbstract
 from services.notifications.registry import NotificationRegistry
 
 @NotificationRegistry.register('email')
