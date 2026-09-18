@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, List
 
-from core.celery import celery_app
+from core.celery_app.app import celery_app
 from services.notifications.registry import NotificationRegistry
 from services.notifications.notification_abstract import NotificationAbstract
 

@@ -1,7 +1,8 @@
 from celery import Celery
+
+from core.celery_app.schedule import CELERY_BEAT_SCHEDULE
 from core.config import settings
 
-from tasks.schedule import CELERY_BEAT_SCHEDULE
 
 celery_app = Celery(
     main=settings.project_name,
