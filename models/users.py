@@ -1,5 +1,8 @@
-from sqlalchemy.orm import mapped_column, Mapped
 import uuid
+
+from sqlalchemy import false
+from sqlalchemy.orm import mapped_column, Mapped
+
 from core.database import Base
 
 
@@ -10,7 +13,7 @@ class UsersModel(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         primary_key=True,
         default=uuid.uuid4,
-    )    
+    )
     email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
-    is_active: Mapped[bool] = mapped_column(default=False)
+    is_active: Mapped[bool] = mapped_column(default=False, server_default=false())
