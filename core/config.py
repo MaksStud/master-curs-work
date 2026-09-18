@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import enum
 
 
 class _Settings(BaseSettings):
@@ -25,14 +26,26 @@ class _Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
 
+
+
     redis_protocol: str = "redis"
     redis_host: str = "localhost"
     redis_port: int = 6379
-    redis_db: int = 0
+
+    class RedisDB(enum.IntEnum):
+        celery = 0
+        cache = 1
+
+    def _redis_url(self, db: "_Settings.RedisDB") -> str:
+        return f"{self.redis_protocol}://{self.redis_host}:{self.redis_port}/{db.value}"
 
     @property
-    def redis_url(self) -> str:
-        return f"{self.redis_protocol}://{self.redis_host}:{self.redis_port}/{self.redis_db}"
+    def celery_redis_url(self) -> str:
+        return self._redis_url(self.RedisDB.celery)
+
+    @property
+    def cache_redis_url(self) -> str:
+        return self._redis_url(self.RedisDB.cache)
 
     mail_username: str = "your@email_addres.com@gmail.com"
     mail_from: str = "your@email_addres.com@gmail.com"

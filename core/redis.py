@@ -5,7 +5,7 @@ from redis.asyncio import Redis, ConnectionPool
 
 from core.config import settings
 
-pool = ConnectionPool.from_url(settings.redis_url)
+pool = ConnectionPool.from_url(settings.cache_redis_url)
 
 async def get_redis():
     """Get Redis client."""

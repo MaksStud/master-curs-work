@@ -6,8 +6,8 @@ from core.config import settings
 
 celery_app = Celery(
     main=settings.project_name,
-    broker=settings.redis_url,
-    backend=settings.redis_url,
+    broker=settings.celery_redis_url,
+    backend=settings.celery_redis_url,
     include=["tasks"]
 )
 
