@@ -34,4 +34,13 @@ class _Settings(BaseSettings):
     def redis_url(self) -> str:
         return f"{self.redis_protocol}://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
+    mail_from: str = "your@email_addres.com@gmail.com",
+    mail_password: str = "your-app-password",
+    mail_server: str = "smtp.gmail.com",
+    mail_port: int = 587,
+    mail_tls: bool = True,
+    mail_ssl: bool = not mail_tls,
+    use_credentials: bool = True,
+    validate_certs: bool = True
+
 settings = _Settings()

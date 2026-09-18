@@ -1,11 +1,13 @@
 from celery import Celery
 from core.config import settings
 
+from tasks.schedule import CELERY_BEAT_SCHEDULE
+
 celery_app = Celery(
     main=settings.project_name,
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["task"]
+    include=["tasks"]
 )
 
 celery_app.conf.update(
@@ -13,5 +15,6 @@ celery_app.conf.update(
     result_serializer="json",
     accept_content=["json"],
     timezone="UTC",
+    beat_schedule=CELERY_BEAT_SCHEDULE
 )
 
