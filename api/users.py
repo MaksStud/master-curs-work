@@ -7,22 +7,23 @@ from core.constantes import (
     OTP_USER_MASSAGE,
     OTP_SUBJECT,
     USER_IS_NOT_EXIST,
-    OTP_CODE_IS_NOT_VALID
+    OTP_CODE_IS_NOT_VALID,
+    INVALID_TOKEN
     )
 from core.security import CurrentUser
 
 from models.users import UsersModel
 
 from schemas.users import (
-    RegisterLoginUserSchema, 
+    RegisterLoginUserSchema,
     ReadProfileUserSchema,
     ConfirmEmailSchema
     )
-from schemas.jwt import JWTTokensSchema
+from schemas.jwt import JWTTokensSchema, RefreshTokenSchema, AccessTokenSchema
 
 from services.hash_password import hash_password, is_valid_password
-from services.users import get_user_by_email, ensure_no_active_user_by_email
-from services.jwt_tokens import create_token_pair
+from services.users import get_user_by_email, get_user_by_id, ensure_no_active_user_by_email
+from services.jwt_tokens import create_token_pair, create_access_token, decode_token
 from services.otp_code import OTPCodeDep
 
 from tasks.send_message import send_massage
@@ -104,6 +105,24 @@ async def login(user: RegisterLoginUserSchema, session: SessionDep) -> JWTTokens
     jwt_tokens = create_token_pair(exist_user.id)
     return jwt_tokens
 
+
+@router.post('/refresh')
+async def refresh_tokens(data: RefreshTokenSchema, session: SessionDep) -> AccessTokenSchema:
+    """
+    Refresh access token.
+    If refresh token valid and user exists, return new access token.
+    """
+    payload = decode_token(data.refresh_token, expected_type="refresh")
+
+    if payload is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, INVALID_TOKEN)
+
+    user = await get_user_by_id(payload.get("sub"), session)
+
+    if user is None or not user.is_active:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, INVALID_TOKEN)
+
+    return AccessTokenSchema(access_token=create_access_token(user.id))
 
 @router.get('/profile')
 def get_user_profile(user: CurrentUser) -> ReadProfileUserSchema:
