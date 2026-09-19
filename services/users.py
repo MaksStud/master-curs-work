@@ -1,10 +1,14 @@
 from typing import Any
 
+from fastapi import HTTPException, status
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
 from models.users import UsersModel
+
+from core.constantes import USER_ALREDY_EXIST
 
 
 async def get_user_by_email(email: str, session: AsyncSession) -> UsersModel | None:
@@ -48,3 +52,23 @@ async def get_user_by_field(
     query = select(UsersModel).where(filter_field == search_value)
     return await session.scalar(query)
 
+async def ensure_no_active_user_by_email(email: str, session: AsyncSession) -> UsersModel | None:
+    """
+    Validate that no active user is registered with the given email.
+
+    :email: User email.
+    :session: Database session.
+
+    :raises HTTPException: If an active user with this email already exists.
+
+    :retun: Existing inactive user or None.
+    """
+    exist_user = await get_user_by_email(email, session)
+
+    if exist_user and exist_user.is_active:
+        raise HTTPException(
+             status_code=status.HTTP_400_BAD_REQUEST,
+             detail=USER_ALREDY_EXIST
+             )
+
+    return exist_user

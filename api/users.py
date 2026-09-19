@@ -1,21 +1,27 @@
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import Response
 
 from core.database import SessionDep
 from core.constantes import (
     EMAIL_OR_PASSWORD_IS_NOT_VALID,
-    USER_ALREDY_EXIST,
     OTP_USER_MASSAGE,
-    OTP_SUBJECT
+    OTP_SUBJECT,
+    USER_IS_NOT_EXIST,
+    OTP_CODE_IS_NOT_VALID
     )
 from core.security import CurrentUser
 
 from models.users import UsersModel
 
-from schemas.users import RegisterLoginUserSchema, ReadProfileUserSchema
+from schemas.users import (
+    RegisterLoginUserSchema, 
+    ReadProfileUserSchema,
+    ConfirmEmailSchema
+    )
 from schemas.jwt import JWTTokensSchema
 
 from services.hash_password import hash_password, is_valid_password
-from services.users import get_user_by_email
+from services.users import get_user_by_email, ensure_no_active_user_by_email
 from services.jwt_tokens import create_token_pair
 from services.otp_code import OTPCodeDep
 
@@ -31,33 +37,49 @@ async def register(user: RegisterLoginUserSchema, session: SessionDep, otp_servi
     Register user.
     If user not alredy exist in database, save and return his profile.
     """
-    exist_user = await get_user_by_email(user.email, session)
+    exist_user = await ensure_no_active_user_by_email(user.email, session)
 
-    if exist_user and exist_user.is_active:
-        raise HTTPException(
-             status_code=status.HTTP_400_BAD_REQUEST,
-             detail=USER_ALREDY_EXIST
-             )
-    elif not exist_user:
-        new_user = UsersModel(
-            email=user.email,
-            password=hash_password(user.password)
-        )
+    target_user = exist_user or UsersModel(
+        email=user.email,
+        password=hash_password(user.password)
+    )
 
-        session.add(new_user)
+    if not exist_user:
+        session.add(target_user)
         await session.commit()
-    else:
-        new_user = exist_user
 
     otp_code = await otp_service.generate_code()
-
-    email = new_user.email
     massage = OTP_USER_MASSAGE.format(otp_code=otp_code)
-    await otp_service.set_code(email, str(otp_code))
 
-    send_massage.delay('email', [email], massage, OTP_SUBJECT)
+    await otp_service.set_code(target_user.email, str(otp_code))
+    send_massage.delay('email', [target_user.email], massage, OTP_SUBJECT)
 
-    return new_user
+    return target_user
+
+
+@router.post('/register/confirm')
+async def register_confirm(data: ConfirmEmailSchema, session: SessionDep, otp_service: OTPCodeDep) -> Response:
+    exist_user = await ensure_no_active_user_by_email(data.email, session)
+
+    if exist_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=USER_IS_NOT_EXIST
+        )
+
+    valid = await otp_service.validate_code(exist_user.email, data.otp_code)
+
+    if not valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=OTP_CODE_IS_NOT_VALID
+        )
+
+    exist_user.is_active = True
+
+    await session.commit()
+
+    return Response()
 
 
 @router.post('/login')
@@ -66,7 +88,7 @@ async def login(user: RegisterLoginUserSchema, session: SessionDep) -> JWTTokens
     Login user.
     If user email and password valid return JWT token.
     """
-    exist_user: UsersModel = await get_user_by_email(user.email, session)
+    exist_user: UsersModel | None = await get_user_by_email(user.email, session)
 
     if exist_user is None or not exist_user.is_active:
         raise HTTPException(
@@ -83,9 +105,6 @@ async def login(user: RegisterLoginUserSchema, session: SessionDep) -> JWTTokens
     return jwt_tokens
 
 
-
-
-    
 @router.get('/profile')
 def get_user_profile(user: CurrentUser) -> ReadProfileUserSchema:
     return user

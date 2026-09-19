@@ -44,5 +44,19 @@ class OTPCodeService:
         code = await self._redis.get(key)
         return int(code) if code is not None else None
 
+    async def validate_code(self, user_identifier: str, code: int) -> bool:
+        """
+        Validate otp code for user.
+
+        :user_identifier: A unique user field for user identification.
+        :code: A code received from the request to validate against the one stored in Redis.
+
+        :return: True if the code matches the stored one, False otherwise.
+        """
+        save_code = await self.get_code(user_identifier)
+        if save_code != code:
+            return False
+        return True
+
 
 OTPCodeDep = Annotated[OTPCodeService, Depends()]
